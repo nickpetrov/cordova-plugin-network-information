@@ -102,8 +102,8 @@ public class NetworkManager extends CordovaPlugin {
         // We need to listen to connectivity events to update navigator.connection
         IntentFilter intentFilterIdle = new IntentFilter();
         intentFilterIdle.addAction(PowerManager.ACTION_DEVICE_IDLE_MODE_CHANGED);
-        if (this.receiver == null) {
-            this.receiver = new BroadcastReceiver() {
+        if (this.receiverIdleMode == null) {
+            this.receiverIdleMode = new BroadcastReceiver() {
                 @Override
                 public void onReceive(Context context, Intent intent) {
                     // (The null check is for the ARM Emulator, please use Intel Emulator for better results)
