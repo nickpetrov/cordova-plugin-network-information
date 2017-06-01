@@ -123,7 +123,7 @@ public class NetworkManager extends CordovaPlugin {
                         }
                     }
                 }
-            }
+            };
         };
         webView.getContext().registerReceiver(this.receiverIdleMode, intentFilterIdle);
     }
