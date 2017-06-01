@@ -100,20 +100,32 @@ public class NetworkManager extends CordovaPlugin {
         this.connectionCallbackContext = null;
 
         // We need to listen to connectivity events to update navigator.connection
-        IntentFilter intentFilter = new IntentFilter();
-        intentFilter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
+        IntentFilter intentFilterIdle = new IntentFilter();
+        intentFilterIdle.addAction(PowerManager.ACTION_DEVICE_IDLE_MODE_CHANGED);
         if (this.receiver == null) {
             this.receiver = new BroadcastReceiver() {
                 @Override
                 public void onReceive(Context context, Intent intent) {
                     // (The null check is for the ARM Emulator, please use Intel Emulator for better results)
-                    if(NetworkManager.this.webView != null)
-                        updateConnectionInfo(sockMan.getActiveNetworkInfo());
+                    PowerManager pm = (PowerManager)context.getSystemService(Context.POWER_SERVICE‌​);
+                    if(NetworkManager.this.webView != null) {
+                        if (!pm.isDeviceIdleMode()) {
+                            NetworkInfo info = sockMan.getActiveNetworkInfo();
+                            if (info != null) {
+                                if (info.isAvailable()) {
+                                    long startTime = System.currentTimeMillis(); //fetch starting time
+                                    while(!info.isConnected()&&(System.currentTimeMillis()-startTime)<CONNECTION_TIMEOUT_CHECK) { 
+                                        info = sockMan.getActiveNetworkInfo(); 
+                                    }
+                                }
+                            }
+                            updateConnectionInfo(info);
+                        }
+                    }
                 }
-            };
-            webView.getContext().registerReceiver(this.receiver, intentFilter);
-        }
-
+            }
+        };
+        webView.getContext().registerReceiver(this.receiverIdleMode, intentFilterIdle);
     }
 
     /**
